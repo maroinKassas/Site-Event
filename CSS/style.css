@@ -1,0 +1,50 @@
+body{
+
+}
+
+section{
+	margin:70px 0px 100px 0px;
+}
+
+.alert{
+    text-align: center!important;
+    width: 100%;
+    position: absolute;
+    top: 45px;
+    left: 0;
+    transition-duration: 5.30s;
+    opacity: 0;
+}
+
+td input{
+    text-align: center!important;
+    padding:6px!important;
+}
+
+.dt-n{
+    display:inline-block!important;
+    width:30%!important;
+    
+}
+
+.btn {
+	font-size: 11px!important;
+}
+
+.btnV{
+	font-weight: bold!important;
+    background: green!important; 
+    background: -webkit-linear-gradient(#a8ff8c, #33ff00)!important; /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(#a8ff8c, #33ff00)!important; /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(#a8ff8c, #33ff00)!important; /* For Firefox 3.6 to 15 */
+    background: linear-gradient(#a8ff8c, #33ff00)!important; /* Standard syntax */
+}
+
+.btnR{
+	font-weight: bold!important;
+    background: red!important; 
+    background: -webkit-linear-gradient(#ff9595, #ff0000)!important; /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(#ff9595, #ff0000)!important; /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(#ff9595, #ff0000)!important; /* For Firefox 3.6 to 15 */
+    background: linear-gradient(#ff9595, #ff0000)!important; /* Standard syntax */
+}
