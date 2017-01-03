@@ -4,7 +4,6 @@ class ClassModule extends ModuleGenerique{
 		require_once("Modules/ModAccueil/Controleur.php");
 		$this->controleur = new Controleur();
 		$this->controleur->accueil();
-	
-		$this->titre = "Site Event - Accueil";
+		$this->titre = "Accueil";
 	}
 }
