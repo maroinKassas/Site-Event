@@ -1,111 +1,99 @@
 <?php
-    ini_set("display_errors",1);
-    require_once ("./include_generique.php");
- 
-    require_once 'utils/include.php';
-	
-	
-	try{
-	    $db = new PDO ($dns, $user, $password);
-	    DBMapper::init($db);
-	}
-	catch(Exception $e){
-	    echo "La connexion à la base de donnée à échoué<br/>".$e->getMessage();
-	}
-     
-    session_start();
-     
-    $module = isset($_GET["module"]) ? $_GET["module"] : "Accueil";
-    $login = isset($_SESSION["identifiant"]) ? $_SESSION["identifiant"] : NULL;
 
-    switch($module){
-		case "Accueil" :
-			require_once("Modules/ModAccueil/ModAccueil.php");
-			break;
-		case 'Admin':
-			if($login == "9532687741184dzeffezzfa"){
-				require_once("Modules/ModAdmin/ModAdmin.php");	
-			}else{
-				require_once("Modules/ModConnexion/ModConnexion.php");
-			}
-			break;
-		default :
-			require_once("Modules/Mod".$module."/Mod".$module.".php");
-			break;
-	}
+require_once __DIR__.'/../vendor/autoload.php';
 
-	$moduleObjet = new ClassModule();
-?>
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-<!DOCTYPE html>
-<html lang="fr">
-	<head>
-		<title>
-			<?php
-				echo $moduleObjet->getTitre();
-			?>
-		</title>
+$app = new Silex\Application();
 
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-		<link rel="stylesheet" href="CSS/style.css">
-		<link href="https://fonts.googleapis.com/css?family=Satisfy" rel="stylesheet">
-	
+$app->get('/', function () {
+    return 'Hello world';
+});
+
+$app->get('/hello/{name}', function ($name) use ($app) {
+    return 'Hello ' . $app->escape($name);
+});
+
+
+$app->register(new Silex\Provider\DoctrineServiceProvider(), array(
+    'db.options' => array(
+        'driver' => 'pdo_mysql',
+        'host' => '127.0.0.1',
+        'dbname' => 'siteevent',
+        'user' => 'root',
+        'password' => '',
+        'charset' => 'utf8',
+    ),
+));
+
+
+$app->get('/participant', function () use ($app) {
+  $sql = "SELECT * FROM participant";
+  $participant = $app['db']->fetchAll($sql);
+  
+	if(empty($participant)){
 		
-	</head>
+		$app->abort(204);
+		
+	}else return $app->json($participant);
+});
 
-	<body>
-		<nav class="navbar navbar-inverse navbar-fixed-top">
-			<div class="container-fluid">
-				<div class="navbar-header">
-					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span> 
-					</button>
-					<a class="navbar-brand" href="?module=Accueil">Site Event</a>
-				</div>
+$app->get('/participant/{idParticipant}', function ($idParticipant) use ($app) {
+  $sql = "SELECT idParticipant, civil, nom, prenom, adresse, codePostal, ville, jours, mois, annees, email, statut FROM participant WHERE idParticipant = ?";
+  $participant = $app['db']->fetchAssoc($sql, array((int) $idParticipant));
+  
+    if (!$participant) {
+        $error = array(' ERREUR 404, the resource was not found.');
 
-				<div class="collapse navbar-collapse" id="myNavbar">
-					<ul class="nav navbar-nav">
-						<li class=""><a href="?module=Accueil">Accueil</a></li>
-					</ul>
-					<ul class="nav navbar-nav navbar-right">
-						<li><a href="?module=Inscription"><span class="glyphicon glyphicon-user"></span> S'inscrire</a></li>
-						<?php
-							if(isset($_SESSION["login"])){
-						?>
-								<li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Connexion</a></li>
-						<?php
-							}
-						?>
-					</ul>
-				</div>
-			</div>
-		</nav>
+        return $app->json($error, 404);
+    }
 
-		<section>
-			<div class="container">
-				<?php
-					$moduleObjet->display();
-				?>
-			</div>
-		</section>
+  return $app->json($participant);
+  
+})->assert('id', '\d+');
 
-		<footer class="navbar navbar-inverse navbar-fixed-bottom">
-			<div class="container-fluid">
-				<div class="collapse navbar-collapse" id="myNavbar">
-					<ul class="nav navbar-nav">
-						<li class=""><a href="?module=">Coordonnée</a></li>
-						<li class=""><a href="?module=">Contact</a></li>
-						<li class=""><a href="?module=">Facebook</a></li>
-					</ul>
-				</div>
-			</div>
-		</footer>
-	</body>
-</html>
+// $app->post('/participant/id/{idParticipant}', function ($idParticipant) use ($app){
+	// $sql= " INSERT INTO `participant`(`idParticipant`, `civil`, `nom`, `prenom`, `adresse`, `codePostal`, `ville`, `jours`, `mois`, `annees`, `email`, `statut`) VALUES (4,'homme','dupont','jean','reergr','75000','hihoihoi','6','5','1889','regerg@ht',NULL) WHERE idParticipant = ?";
+	// $participant = $app['db']->fetchAssoc($sql, array((int) $idParticipant));
+	// return $app->json($participant);
+// });
+
+
+$app->get('/participant/inscription/statut/{idParticipant}', function ($idParticipant) use ($app) {
+	
+	
+		$sql = "SELECT statut FROM participant WHERE idParticipant = ?";
+		$participant = $app['db']->fetchAssoc($sql, array((int) $idParticipant));
+  
+    if (!$participant) {
+        $error = array(' ERREUR 404, the resource was not found.');
+
+        return $app->json($error, 404);
+    }
+
+	return $app->json($participant);
+  
+})->assert('id', '\d+');
+
+// $app->put('/participant/update/statut/{idParticipant}', function ($idParticipant, Request $request) use ($app) {
+	
+	// $sql = "UPDATE participant SET statut FROM participant WHERE idParticipant = ?";
+	// $participant = $app['db']->fetchAssoc($sql, array((int) $idParticipant));
+	
+// })
+
+
+
+    
+	
+
+	
+
+	
+$app->run();
+
+
+
+?>
 
